@@ -136,7 +136,7 @@ Edit in `src/floating-box.html` CSS:
 ```
 
 ### Add Click-Through Support
-To make the floating box click-through (allowing clicks to pass to the target window beneath), add in `src/main.js` after creating the window [^34^]:
+To make the floating box click-through (allowing clicks to pass to the target window beneath), add in `src/main.js` after creating the window:
 ```javascript
 floatingBox.setIgnoreMouseEvents(true, { forward: true });
 ```
