@@ -23,10 +23,10 @@ To get the fully updated, working bypass join our discord at: https://discord.gg
 
 The app uses `ffi-napi` to call Windows API functions directly:
 
-1. **FindWindow/EnumWindows**: Locates target windows by title or enumerates all visible windows [^16^]
-2. **GetWindowRect**: Gets target window position and dimensions for constraining [^25^]
-3. **SetWindowPos**: Sets the floating box to `HWND_TOPMOST` to stay on top of the target [^30^]
-4. **SetWindowLong**: Modifies window styles to ensure proper popup behavior [^17^]
+1. **FindWindow/EnumWindows**: Locates target windows by title or enumerates all visible windows
+2. **GetWindowRect**: Gets target window position and dimensions for constraining
+3. **SetWindowPos**: Sets the floating box to `HWND_TOPMOST` to stay on top of the target
+4. **SetWindowLong**: Modifies window styles to ensure proper popup behavior
 5. **Tracking Loop**: Monitors target window position at 60fps and adjusts floating box accordingly
 
 ### Window Relationship
