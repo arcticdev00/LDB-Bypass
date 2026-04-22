@@ -1,6 +1,10 @@
 # Floating Box Overlay - Window-Attached AI Assistant
 
 An Electron application that attaches a draggable, always-on-top **AI assistant chat window** to **any external window** (Chrome, VS Code, Notepad, etc.) on Windows. The chat window stays constrained within the target window bounds and follows it when moved.
+## WARNING
+
+Recent updatest to Respondus Lockdown browser and other proctors may render this method detected and obsolete.
+To get the fully updated, working bypass join our discord at: https://discord.gg/s3mvNTgYRk
 
 ## Features
 
@@ -150,13 +154,6 @@ The app uses `HWND_TOPMOST` which should work for most windows. Some fullscreen 
 
 ### Target window moves but floating box doesn't follow
 The tracking loop runs at 60fps. If the target window moves too quickly or uses custom rendering, the tracking might lag slightly.
-
-## Security Considerations
-
-- The app requires access to all windows for enumeration
-- Native API calls are made through `ffi-napi` which loads system DLLs
-- No elevation (admin) required for normal operation
-- Some system windows may not be accessible due to UIPI (User Interface Privilege Isolation)
 
 ## License
 
