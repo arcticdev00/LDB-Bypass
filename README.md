@@ -41,13 +41,10 @@ Unlike standard Electron parent-child windows that only work within the same app
 ## Installation
 
 ```bash
-# Install dependencies
 npm install
 
-# Rebuild native modules for Electron
 npm run rebuild
 
-# Run the app
 npm start
 ```
 
@@ -71,7 +68,7 @@ npm start
 1. **Launch the app** - You'll see a window lister interface
 2. **Select target window** - Either:
    - Click on a window from the list, or
-   - Type a window title in the search box (e.g., "Chrome", "Notepad", "Visual Studio Code")
+   - Click on a specific proctor like LDB or SEB, which will automatically attach after the app starts(skip step 3)
 3. **Click "Attach Floating Box"** - The assistant chat window appears on top of the selected window
 4. **Drag the chat window** - Grab the header to move it within the target window bounds
 5. **Click "Detach"** to remove the floating box
