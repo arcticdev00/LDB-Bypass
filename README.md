@@ -150,10 +150,10 @@ floatingBox.setIgnoreMouseEvents(true, { forward: true });
 Run `npm run rebuild` to compile native modules for your Electron version.
 
 ### "No windows found"
-Make sure you're running as a user with window enumeration permissions (not admin required, but some windows may be protected).
+Make sure you run it from an admin command prompt
 
 ### Floating box doesn't stay on top
-The app uses `HWND_TOPMOST` which should work for most windows. Some fullscreen applications or games with exclusive mode may override this.
+The app uses `HWND_TOPMOST` which should work for most windows. Some Lockdown apps may block this/take priority over it.
 
 ### Target window moves but floating box doesn't follow
 The tracking loop runs at 60fps. If the target window moves too quickly or uses custom rendering, the tracking might lag slightly.
