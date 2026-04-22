@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Floating Box Overlay</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #050505;
+      color: #fff;
+      min-height: 100vh;
+      padding: 22px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .muted {
+      color: #a0a0a0;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon {
+      width: 24px;
+      height: 24px;
+      background: #fff;
+      color: #000;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+    }
+
+    .input-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: #fff;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    input[type="text"]::placeholder {
+      color: #777;
+    }
+
+    button {
+      padding: 12px 24px;
+      background: #fff;
+      border: none;
+      border-radius: 12px;
+      color: #000;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.7);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    button.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: none;
+    }
+
+    button.secondary:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .arm-apps {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .arm-app-btn {
+      flex: 1;
+      min-width: 100px;
+      justify-content: center;
+    }
+
+    .window-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .window-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .window-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .window-item.selected {
+      background: rgba(255, 255, 255, 0.15);
+      border-left: 3px solid #fff;
+    }
+
+    .window-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .window-title {
+      font-weight: 500;
+      font-size: 14px;
+      color: #fff;
+    }
+
+    .window-class {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .window-hwnd {
+      font-family: monospace;
+      font-size: 11px;
+      color: #666;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4CAF50;
+      animation: pulse 2s infinite;
+    }
+
+    .status-indicator.inactive {
+      background: #f44336;
+      animation: none;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .status-text {
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    .status-text strong {
+      color: #fff;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .info-box {
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 3px solid #fff;
+      padding: 12px 16px;
+      border-radius: 0 12px 12px 0;
+      margin-bottom: 20px;
+      font-size: 13px;
+      line-height: 1.6;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .titlebar {
+      -webkit-app-region: drag;
+      height: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 9999;
+    }
+
+    .titlebar-text {
+      font-size: 13px;
+      color: #aaa;
+      padding-left: 12px;
+    }
+
+    .titlebar-close {
+      -webkit-app-region: no-drag;
+      background: transparent;
+      border: none;
+      color: #aaa;
+      width: 40px;
+      height: 32px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      padding: 0;
+      margin: 0;
+      border-radius: 0;
+    }
+
+    .titlebar-close:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      transform: none;
+      box-shadow: none;
+    }
+
+    body {
+      padding-top: 36px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="titlebar">
+    <div class="titlebar-text">Target Selector</div>
+    <button class="titlebar-close" onclick="window.close()">✕</button>
+  </div>
+  <div class="container">
+    <div class="info-box">
+      <strong>How it works:</strong> Attach manually by selecting a window, or arm the app to wait for a process/window
+      title and auto-attach after ~5 seconds.
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="icon">A</div>
+        Arm (Auto-Attach)
+      </div>
+
+      <div class="muted" style="margin-bottom: 12px;">
+        Arms the app to wait for a target app to launch. When found, it waits ~5 seconds for initialization and then
+        attaches the overlay.
+      </div>
+
+      <div class="arm-apps">
+        <button onclick="armStartApp('lockdownbrowser.exe')" class="arm-app-btn">Lockdown Browser</button>
+        <button onclick="armStartApp('safeexambrowser.client.exe')" class="arm-app-btn">SEB</button>
+        <button onclick="armStartApp('LockDownBrowserOEM.exe')" class="arm-app-btn">LDB OEM</button>
+        <button onclick="armStartApp('msedge.exe')" class="arm-app-btn">Microsoft Edge</button>
+      </div>
+
+      <div class="controls">
+        <button id="disarmBtn" onclick="armStop()" class="secondary" disabled>Disarm</button>
+      </div>
+
+      <div class="status">
+        <div class="status-indicator inactive" id="armIndicator"></div>
+        <div class="status-text" id="armStatusText">Not armed.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="icon">!</div>
+        Target Window Selection
+      </div>
+
+      <div class="input-group">
+        <input type="text" id="searchInput" placeholder="Search by window title... (e.g., Chrome, Notepad, Code)">
+        <button onclick="refreshWindowList()" class="secondary">
+          Refresh
+        </button>
+      </div>
+
+      <div id="windowList" class="window-list">
+        <div class="loading">
+          <div class="spinner"></div>
+          <div>Loading windows...</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="attachBtn" onclick="attachToSelected()" disabled>
+          Attach Floating Box
+        </button>
+        <button onclick="detachWindow()" class="secondary">
+          Detach
+        </button>
+      </div>
+
+      <div class="status">
+        <div class="status-indicator inactive" id="statusIndicator"></div>
+        <div class="status-text" id="statusText">
+          No window attached. Select a window and click "Attach Floating Box"
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">
+        <div class="icon"></div>
+        Instructions
+      </div>
+      <ul style="margin-left: 20px; line-height: 2; color: #aaa; font-size: 14px;">
+        <li>The floating box will stay on top of the selected window</li>
+        <li>Drag the box by its header to move it within the target window</li>
+        <li>The box cannot be dragged outside the target window bounds</li>
+        <li>If the target window moves, the floating box follows</li>
+        <li>Click "Detach" to remove the floating box</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    let windows = [];
+    let selectedHwnd = null;
+    let isAttached = false;
+    let isArmed = false;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      refreshWindowList();
+
+      ipcRenderer.on('arm-update', (event, payload) => {
+        if (!payload) return;
+        updateArmStatus(payload.state || 'idle', payload.message || '');
+
+        if (payload.state === 'attached') {
+          isAttached = true;
+          if (payload.title) updateStatus(true, payload.title);
+          else updateStatus(true, '');
+        }
+      });
+    });
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase();
+      filterWindows(searchTerm);
+    });
+
+    async function refreshWindowList() {
+      const listContainer = document.getElementById('windowList');
+      listContainer.innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          <div>Loading windows...</div>
+        </div>
+      `;
+
+      try {
+        windows = await ipcRenderer.invoke('find-windows');
+        renderWindowList(windows);
+      } catch (error) {
+        listContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon"></div>
+            <div>Error loading windows: ${error.message}</div>
+          </div>
+        `;
+      }
+    }
+
+    function renderWindowList(windowList) {
+      const listContainer = document.getElementById('windowList');
+
+      if (windowList.length === 0) {
+        listContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon"></div>
+            <div>No windows found</div>
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = windowList.map(w => `
+        <div class="window-item" data-hwnd="${w.hwnd}" onclick="selectWindow('${w.hwnd}')">
+          <div class="window-info">
+            <div class="window-title">${escapeHtml(w.title)}</div>
+            <div class="window-class">${escapeHtml(w.className)}</div>
+          </div>
+          <div class="window-hwnd">${w.hwnd}</div>
+        </div>
+      `).join('');
+    }
+
+    function filterWindows(searchTerm) {
+      const filtered = windows.filter(w =>
+        w.title.toLowerCase().includes(searchTerm) ||
+        w.className.toLowerCase().includes(searchTerm)
+      );
+      renderWindowList(filtered);
+
+      // Reselect if still visible
+      if (selectedHwnd) {
+        const item = document.querySelector(`[data-hwnd="${selectedHwnd}"]`);
+        if (item) item.classList.add('selected');
+      }
+    }
+
+    function selectWindow(hwnd) {
+      selectedHwnd = hwnd;
+
+      // Update UI
+      document.querySelectorAll('.window-item').forEach(item => {
+        item.classList.remove('selected');
+      });
+      const item = document.querySelector(`[data-hwnd="${hwnd}"]`);
+      if (item) item.classList.add('selected');
+
+      // Enable attach button
+      document.getElementById('attachBtn').disabled = false;
+    }
+
+    async function attachToSelected() {
+      if (!selectedHwnd) return;
+
+      const btn = document.getElementById('attachBtn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Attaching...';
+
+      try {
+        const result = await ipcRenderer.invoke('attach-to-window', selectedHwnd);
+
+        if (result.success) {
+          isAttached = true;
+          updateStatus(true, result.title);
+        } else {
+          alert('Failed to attach: ' + result.error);
+        }
+      } catch (error) {
+        alert('Error: ' + error.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔗 Attach Floating Box';
+      }
+    }
+
+    async function detachWindow() {
+      try {
+        await ipcRenderer.invoke('detach-window');
+        isAttached = false;
+        updateStatus(false);
+      } catch (error) {
+        console.error('Detach error:', error);
+      }
+    }
+
+    function updateStatus(attached, title = '') {
+      const indicator = document.getElementById('statusIndicator');
+      const text = document.getElementById('statusText');
+
+      if (attached) {
+        indicator.classList.remove('inactive');
+        text.innerHTML = `Attached to: <strong>${escapeHtml(title)}</strong>`;
+      } else {
+        indicator.classList.add('inactive');
+        text.textContent = 'No window attached. Select a window and click "Attach Floating Box"';
+      }
+    }
+
+    async function armStartApp(processName) {
+      document.querySelectorAll('.arm-app-btn').forEach(btn => btn.disabled = true);
+
+      try {
+        const res = await ipcRenderer.invoke('arm-start', { processName, windowTitle: '' });
+        if (!res || !res.success) {
+          alert((res && res.error) ? res.error : 'Failed to arm');
+          updateArmStatus('idle', 'Not armed.');
+        }
+      } catch (e) {
+        alert(e && e.message ? e.message : String(e));
+        updateArmStatus('idle', 'Not armed.');
+      }
+    }
+
+    async function armStop() {
+      try {
+        await ipcRenderer.invoke('arm-stop');
+      } catch (e) {
+        console.error('Disarm error:', e);
+      } finally {
+        updateArmStatus('idle', 'Not armed.');
+      }
+    }
+
+    function updateArmStatus(state, message) {
+      const indicator = document.getElementById('armIndicator');
+      const text = document.getElementById('armStatusText');
+      const armBtn = document.getElementById('armBtn');
+      const disarmBtn = document.getElementById('disarmBtn');
+
+      if (state === 'idle') {
+        isArmed = false;
+        indicator.classList.add('inactive');
+        text.textContent = message || 'Not armed.';
+      } else {
+        isArmed = true;
+        indicator.classList.remove('inactive');
+        text.textContent = message || state;
+      }
+
+      document.querySelectorAll('.arm-app-btn').forEach(btn => btn.disabled = isArmed);
+      disarmBtn.disabled = !isArmed;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+
+</html>

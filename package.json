@@ -1,0 +1,26 @@
+{
+  "name": "floating-box-overlay",
+  "version": "1.0.0",
+  "description": "Attach a floating box to any window by process name",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "rebuild": "electron-rebuild -f",
+    "build": "electron-builder",
+    "postinstall": "electron-rebuild -f",
+    "setup": "node node_modules/electron/install.js && electron-rebuild -f"
+  },
+  "dependencies": {
+    "@lwahonen/ffi-napi": "^4.0.12",
+    "@lwahonen/ref-napi": "^4.0.8",
+    "node-window-manager": "^2.2.4",
+    "ref-struct-di": "^1.1.0"
+  },
+  "overrides": {
+    "ref-napi": "npm:@lwahonen/ref-napi@^4.0.8"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-rebuild": "^3.2.9"
+  }
+}

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assistant</title>
+  <style>
+    :root {
+      --bg: rgba(5, 5, 5, 0.85);
+      --stroke: rgba(255, 255, 255, 0.15);
+      --shadow: rgba(255, 255, 255, 0.15);
+      --text: #ffffff;
+      --subtle: rgba(255, 255, 255, 0.7);
+      --user: rgba(255, 255, 255, 0.2);
+      --assistant: rgba(255, 255, 255, 0.08);
+      --surface: rgba(0, 0, 0, 0.6);
+      --danger: #ff3b30;
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      background: transparent;
+      color: var(--text);
+      user-select: none;
+    }
+
+    .shell {
+      width: 100%;
+      height: 100%;
+      border-radius: 24px;
+      overflow: hidden;
+      background: radial-gradient(120% 100% at 10% 0%,
+          rgba(255, 255, 255, 0.10) 0%,
+          rgba(255, 255, 255, 0.05) 40%,
+          rgba(0, 0, 0, 0.6) 72%),
+        var(--bg);
+      backdrop-filter: blur(22px) saturate(160%);
+      border: 1px solid var(--stroke);
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 1px 1px, rgba(0,0,0,0.06) 0.5px, transparent 0.6px);
+      background-size: 4px 4px;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .topbar {
+      -webkit-app-region: no-drag;
+      padding: 12px 12px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 2;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+      background: linear-gradient(180deg, rgba(20,20,20,0.8), rgba(0,0,0,0.5));
+    }
+
+    .title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      cursor: move;
+    }
+
+    .pill {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: #000;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      letter-spacing: 0.3px;
+    }
+
+    .title-text {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .title-text .name {
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .title-text .status {
+      font-size: 11px;
+      color: var(--subtle);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(52, 199, 89, 0.95);
+      box-shadow: 0 0 0 3px rgba(52, 199, 89, 0.12);
+      animation: breathe 1.7s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(0.86); opacity: 0.72; }
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      height: 32px;
+      min-width: 32px;
+      padding: 0 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      transition: transform 120ms ease, background 120ms ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); background: rgba(255, 255, 255, 0.25); box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
+    .btn:active { transform: translateY(0px) scale(0.98); }
+    .btn.danger { color: var(--danger); }
+
+    .chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px;
+      position: relative;
+      z-index: 1;
+      user-select: text;
+    }
+
+    .messages {
+      flex: 1;
+      overflow: auto;
+      padding: 2px 2px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scrollbar-width: thin;
+    }
+
+    .messages::-webkit-scrollbar { width: 8px; }
+    .messages::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 10px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+
+    .bubble {
+      max-width: 86%;
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      line-height: 1.28;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.10);
+      opacity: 0;
+      transform: translateY(6px);
+      animation: pop 140ms ease forwards;
+    }
+
+    @keyframes pop {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .bubble.user {
+      margin-left: auto;
+      background: #fff;
+      color: #000;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      border-bottom-right-radius: 8px;
+    }
+
+    .bubble.assistant {
+      margin-right: auto;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border-bottom-left-radius: 8px;
+    }
+
+    .bubble.meta {
+      margin: 0 auto;
+      max-width: 92%;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px dashed rgba(255, 255, 255, 0.22);
+      color: rgba(255, 255, 255, 0.64);
+      box-shadow: none;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .composer {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      padding: 10px;
+      border-radius: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    }
+
+    textarea {
+      flex: 1;
+      resize: none;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 13px;
+      color: #fff;
+      min-height: 18px;
+      max-height: 92px;
+      line-height: 1.25;
+    }
+
+    textarea::placeholder { color: rgba(255, 255, 255, 0.45); }
+
+    .send {
+      width: 38px;
+      height: 38px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      background: #fff;
+      color: #000;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: transform 120ms ease, background 120ms ease, opacity 120ms ease;
+      flex: 0 0 auto;
+    }
+
+    .send:hover { transform: translateY(-1px); background: #eee; box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); }
+    .send:active { transform: translateY(0px) scale(0.98); }
+    .send:disabled { opacity: 0.45; cursor: default; transform: none; }
+
+    .plane {
+      width: 16px;
+      height: 16px;
+      display: block;
+    }
+
+    .kbd {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.5);
+      text-align: right;
+      padding: 6px 2px 0;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="title" id="header">
+        <div class="pill">AI</div>
+        <div class="title-text">
+          <div class="name">Assistant</div>
+          <div class="status"><span class="dot"></span><span id="statusText">Ready</span></div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="clearBtn" title="Clear chat">Clear</button>
+        <button class="btn danger" id="closeBtn" title="Close">Close</button>
+      </div>
+    </div>
+
+    <div class="chat">
+      <div class="messages" id="messages"></div>
+      <div class="composer">
+        <textarea id="input" rows="1" placeholder="Ask anything..." spellcheck="false"></textarea>
+        <button class="send" id="sendBtn" title="Send">
+          <svg class="plane" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2L11 13" />
+            <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+          </svg>
+        </button>
+      </div>
+      <div class="kbd">Enter to send • Shift+Enter for newline</div>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    const header = document.getElementById('header');
+    const messagesEl = document.getElementById('messages');
+    const inputEl = document.getElementById('input');
+    const sendBtn = document.getElementById('sendBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    const statusText = document.getElementById('statusText');
+
+    let isDragging = false;
+    let isBusy = false;
+
+    let contents = [];
+
+    function setStatus(text) {
+      statusText.textContent = text;
+    }
+
+    function scrollToBottom() {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function addBubble(kind, text) {
+      const el = document.createElement('div');
+      el.className = `bubble ${kind}`;
+      el.textContent = text;
+      messagesEl.appendChild(el);
+      scrollToBottom();
+      return el;
+    }
+
+    function setBusy(nextBusy) {
+      isBusy = nextBusy;
+      sendBtn.disabled = nextBusy;
+      if (nextBusy) setStatus('Thinking...');
+      else setStatus('Ready');
+    }
+
+    function normalizePrompt(text) {
+      return (text || '').replace(/\\r\\n/g, '\\n').trim();
+    }
+
+    async function sendPrompt() {
+      const prompt = normalizePrompt(inputEl.value);
+      if (!prompt || isBusy) return;
+
+      inputEl.value = '';
+      resizeInput();
+
+      addBubble('user', prompt);
+      contents.push({ role: 'user', parts: [{ text: prompt }] });
+
+      setBusy(true);
+      const typing = addBubble('assistant', '...');
+
+      try {
+        const res = await ipcRenderer.invoke('gemini-generate', { contents });
+        if (!res || !res.success) {
+          const err = (res && res.error) ? res.error : 'Gemini request failed';
+          typing.className = 'bubble meta';
+          typing.textContent = err;
+          setBusy(false);
+          return;
+        }
+
+        const reply = (res.text || '').trim();
+        contents.push({ role: 'model', parts: [{ text: reply || '(empty response)' }] });
+        typing.textContent = reply || '(empty response)';
+      } catch (e) {
+        typing.className = 'bubble meta';
+        typing.textContent = (e && e.message) ? e.message : String(e);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function resizeInput() {
+      inputEl.style.height = 'auto';
+      inputEl.style.height = Math.min(inputEl.scrollHeight, 92) + 'px';
+    }
+
+    header.addEventListener('mousedown', (e) => {
+      if (e.target.closest('button')) return;
+      isDragging = true;
+      ipcRenderer.send('drag-start', { screenX: e.screenX, screenY: e.screenY });
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      ipcRenderer.send('drag-move', { screenX: e.screenX, screenY: e.screenY });
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      ipcRenderer.send('drag-end');
+    });
+
+    document.addEventListener('selectstart', (e) => {
+      if (isDragging) e.preventDefault();
+    });
+
+    inputEl.addEventListener('input', resizeInput);
+
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendPrompt();
+      }
+    });
+
+    sendBtn.addEventListener('click', () => sendPrompt());
+
+    clearBtn.addEventListener('click', () => {
+      contents = [];
+      messagesEl.innerHTML = '';
+      addBubble('meta', 'New chat.');
+      inputEl.focus();
+    });
+
+    closeBtn.addEventListener('click', () => window.close());
+
+    addBubble('meta', 'New chat. Set `GEMINI_API_KEY` and start typing.');
+    inputEl.focus();
+    resizeInput();
+  </script>
+</body>
+</html>
