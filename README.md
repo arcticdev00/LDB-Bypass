@@ -59,7 +59,9 @@ Set an environment variable before running:
 
 in powershell:
 $env:GEMINI_API_KEY="YOUR_KEY_HERE"
+
 $env:GEMINI_MODEL="gemini-2.5-flash"
+
 npm start
 
 
