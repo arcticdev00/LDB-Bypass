@@ -13,7 +13,6 @@ To get the fully updated, working bypass join our discord at: https://discord.gg
 - **Always On Top**: Uses Windows API `SetWindowPos` with `HWND_TOPMOST` to stay above the target
 - **Bounds Constrained**: Floating box cannot be dragged outside the target window
 - **Window Tracking**: Automatically follows the target window when it's moved
-- **Chat UI**: Clean iOS-style assistant chat (bubbles, blur, smooth motion)
 - **Gemini Queries**: Prompts are sent to the Gemini API from the main process (API key stays out of the renderer)
 - **Draggable**: Drag by the header to position within the target window
 
