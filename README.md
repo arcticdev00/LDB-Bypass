@@ -1,6 +1,6 @@
-# Floating Box Overlay - Window-Attached AI Assistant
+# Floating Box Overlay - Attached AI Window
 
-An Electron application that attaches a draggable, always-on-top **AI assistant chat window** to **any external window** (Chrome, VS Code, Notepad, etc.) on Windows. The chat window stays constrained within the target window bounds and follows it when moved.
+An Electron application that attaches a draggable, always-on-top **AI assistant chat window** to **any external window** on Windows. The chat window stays constrained within the target window bounds and follows it when moved.
 ## WARNING
 
 Recent updatest to Respondus Lockdown browser and other proctors may render this method detected and obsolete.
