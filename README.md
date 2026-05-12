@@ -4,7 +4,7 @@ An Electron application that attaches a draggable, always-on-top **AI assistant 
 ## WARNING
 
 Recent updatest to Respondus Lockdown browser and other proctors may render this method detected and obsolete.
-To get the fully updated, working bypass join our discord at: https://discord.gg/s3mvNTgYRk
+To get the fully updated, working bypass join our discord at: [https://discord.gg/s3mvNTgYRk](https://discord.gg/HBjpBv9dUv)
 
 ## Features
 
